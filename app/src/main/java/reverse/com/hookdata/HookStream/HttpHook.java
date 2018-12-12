@@ -2,6 +2,7 @@ package reverse.com.hookdata.HookStream;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.util.Log;
@@ -40,6 +41,7 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import reverse.com.hookdata.Utils.ByteUtils;
+import reverse.com.hookdata.Utils.CommonUtils;
 import reverse.com.hookdata.Utils.LogUtils;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
@@ -78,29 +80,29 @@ public class HttpHook {
 
     }
 
-    public void startStreamHook(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
+    public void startStreamHook(ClassLoader cl) throws Throwable {
 
         if (TCPLOCATION) {
 
             //发送
-            Hookoutput001(lpparam);
+            Hookoutput001(cl);
             //Hookoutput002(lpparam);
 
             //接收
-            Hookinput(lpparam);
+            Hookinput(cl);
         }
 
         if (UDPLOCATION) {
-            HookUdpData(lpparam);
+            HookUdpData(cl);
         }
 
 
         if (HTTPLOCATION) {
             //hook HttpClient接口
-            hookHttpClient(lpparam);
+            hookHttpClient(cl);
 
-            //hook volley库
-
+            //hook volley库 okhttp3
+            hookOkhttp(cl);
 
             //上述是从整个报文发送接收处查找，下面对每个HEADER或者参数进行定位，以便解析每个字段含义的处理地方
 
@@ -117,7 +119,7 @@ public class HttpHook {
                 }
             });
             //
-            findAndHookMethod("java.net.DatagramSocket", lpparam.classLoader, "createSocket", int.class, InetAddress.class, new XC_MethodHook() {
+            findAndHookMethod("java.net.DatagramSocket", cl, "createSocket", int.class, InetAddress.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param)
                         throws Throwable {
@@ -125,7 +127,7 @@ public class HttpHook {
                     super.beforeHookedMethod(param);
                 }
             });
-            findAndHookMethod("java.net.DatagramSocket", lpparam.classLoader, "bind", SocketAddress.class, new XC_MethodHook() {
+            findAndHookMethod("java.net.DatagramSocket", cl, "bind", SocketAddress.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param)
                         throws Throwable {
@@ -143,7 +145,7 @@ public class HttpHook {
             });
 
             //
-            findAndHookMethod("android.webkit.WebView", lpparam.classLoader, "loadUrl", String.class, new XC_MethodHook() {
+            findAndHookMethod("android.webkit.WebView", cl, "loadUrl", String.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param)
                         throws Throwable {
@@ -152,7 +154,7 @@ public class HttpHook {
                     super.beforeHookedMethod(param);
                 }
             });
-            findAndHookMethod("android.webkit.WebView", lpparam.classLoader, "loadUrl", String.class, Map.class, new XC_MethodHook() {
+            findAndHookMethod("android.webkit.WebView", cl, "loadUrl", String.class, Map.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param)
                         throws Throwable {
@@ -167,7 +169,7 @@ public class HttpHook {
                     super.beforeHookedMethod(param);
                 }
             });
-            findAndHookMethod("android.webkit.WebView", lpparam.classLoader, "postUrl", String.class, byte[].class, new XC_MethodHook() {
+            findAndHookMethod("android.webkit.WebView", cl, "postUrl", String.class, byte[].class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param)
                         throws Throwable {
@@ -182,7 +184,7 @@ public class HttpHook {
                     super.beforeHookedMethod(param);
                 }
             });
-            findAndHookMethod("java.nio.channels.SocketChannel", lpparam.classLoader, "open", SocketAddress.class, new XC_MethodHook() {
+            findAndHookMethod("java.nio.channels.SocketChannel",cl, "open", SocketAddress.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param)
                         throws Throwable {
@@ -191,7 +193,7 @@ public class HttpHook {
                 }
             });
 
-            findAndHookMethod("java.net.Socket", lpparam.classLoader, "startupSocket", InetAddress.class, int.class, InetAddress.class, int.class, boolean.class, new XC_MethodHook() {
+            findAndHookMethod("java.net.Socket", cl, "startupSocket", InetAddress.class, int.class, InetAddress.class, int.class, boolean.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param)
                         throws Throwable {
@@ -199,7 +201,7 @@ public class HttpHook {
                     super.beforeHookedMethod(param);
                 }
             });
-            findAndHookMethod("java.net.Socket", lpparam.classLoader, "connect", SocketAddress.class, int.class, new XC_MethodHook() {
+            findAndHookMethod("java.net.Socket", cl, "connect", SocketAddress.class, int.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param)
                         throws Throwable {
@@ -215,7 +217,7 @@ public class HttpHook {
                     super.beforeHookedMethod(param);
                 }
             });
-            findAndHookMethod("java.net.ServerSocket", lpparam.classLoader, "bind", SocketAddress.class, int.class, new XC_MethodHook() {
+            findAndHookMethod("java.net.ServerSocket", cl, "bind", SocketAddress.class, int.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param)
                         throws Throwable {
@@ -225,7 +227,7 @@ public class HttpHook {
             });
 
             //
-            findAndHookMethod("java.net.URL", lpparam.classLoader, "openConnection", java.net.Proxy.class, new XC_MethodHook() {
+            findAndHookMethod("java.net.URL", cl, "openConnection", java.net.Proxy.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param)
                         throws Throwable {
@@ -235,7 +237,7 @@ public class HttpHook {
                 }
             });
             if (HTTP_DATA) {
-                findAndHookMethod("java.net.URLConnection", lpparam.classLoader, "setRequestProperty", String.class, String.class, new XC_MethodHook() {
+                findAndHookMethod("java.net.URLConnection", cl, "setRequestProperty", String.class, String.class, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param)
                             throws Throwable {
@@ -244,7 +246,7 @@ public class HttpHook {
                     }
 
                 });
-                findAndHookMethod("java.net.URLConnection", lpparam.classLoader, "addRequestProperty", String.class, String.class, new XC_MethodHook() {
+                findAndHookMethod("java.net.URLConnection", cl, "addRequestProperty", String.class, String.class, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param)
                             throws Throwable {
@@ -254,7 +256,7 @@ public class HttpHook {
 
                 });
             }
-            findAndHookMethod("java.net.URL", lpparam.classLoader, "openConnection", new XC_MethodHook() {
+            findAndHookMethod("java.net.URL", cl, "openConnection", new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param)
                         throws Throwable {
@@ -267,8 +269,8 @@ public class HttpHook {
     }
 
     //Hook http参数
-    private void HookHTTPArgs(XC_LoadPackage.LoadPackageParam lpparam) {
-        findAndHookMethod("java.net.URLConnection", lpparam.classLoader, "setRequestProperty", String.class, String.class, new XC_MethodHook() {
+    private void HookHTTPArgs(ClassLoader cl) {
+        findAndHookMethod("java.net.URLConnection", cl, "setRequestProperty", String.class, String.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param)
                     throws Throwable {
@@ -277,7 +279,7 @@ public class HttpHook {
             }
 
         });
-        findAndHookMethod("java.net.URLConnection", lpparam.classLoader, "addRequestProperty", String.class, String.class, new XC_MethodHook() {
+        findAndHookMethod("java.net.URLConnection", cl, "addRequestProperty", String.class, String.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param)
                     throws Throwable {
@@ -289,12 +291,13 @@ public class HttpHook {
     }
 
     //HookUdp数据
-    private void HookUdpData(XC_LoadPackage.LoadPackageParam lpparam) {
+    private void HookUdpData(ClassLoader cl) {
 
-        findAndHookMethod("java.net.DatagramSocket", lpparam.classLoader, "send", DatagramPacket.class, new XC_MethodHook() {
+        findAndHookMethod("java.net.DatagramSocket", cl, "send", DatagramPacket.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 LogUtils.startLog(TAG);
+                LogUtils.logString(TAG,"HookUdpData");
                 LogUtils.logString(TAG, "UDP数据的发送，DatagramSocket.send");
                 DatagramPacket udpData = (DatagramPacket) param.args[0];
                 byte[] data = udpData.getData();
@@ -307,13 +310,13 @@ public class HttpHook {
     }
 
     //一般网络传输通过获取OutputStream实例，通过write发送报文
-    private void Hookoutput001(XC_LoadPackage.LoadPackageParam lpparam) {
-        findAndHookMethod("java.io.OutputStream", lpparam.classLoader, "write", byte[].class, int.class, int.class, new XC_MethodHook() {
+    private void Hookoutput001(ClassLoader cl) {
+        findAndHookMethod("java.io.OutputStream", cl, "write", byte[].class, int.class, int.class, new XC_MethodHook() {
             @Override
-            protected void afterHookedMethod(MethodHookParam param)
-                    throws Throwable {
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 byte[] data = (byte[]) param.args[0];
                 LogUtils.startLog(TAG);
+                LogUtils.logString(TAG,"Hookoutput001");
                 LogUtils.logString(TAG, "OutputStream.write发送数据-Hookoutput001");
                 LogUtils.logBinHexStr(TAG, data);
                 LogUtils.logBinString(TAG, data);
@@ -342,11 +345,12 @@ public class HttpHook {
 */
 
     //一般网络接受数据通过获取InputStream实例，通过read获取response数据
-    private void Hookinput(XC_LoadPackage.LoadPackageParam lpparam) {
+    private void Hookinput(ClassLoader cl) {
         findAndHookMethod(InputStream.class, "read", byte[].class, int.class, int.class, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 LogUtils.startLog(TAG);
+                LogUtils.logString(TAG,"Hookinput");
                 byte[] revDatabuffer = (byte[]) param.args[0];
                 int off = (int) param.args[1];
                 int len = (int) param.args[2];
@@ -386,49 +390,56 @@ public class HttpHook {
     }
 
     //Hook okHttp3
-    private void hookOkhttp(XC_LoadPackage.LoadPackageParam lpparam){
-        findAndHookMethod("okhttp3.RealCall", lpparam.classLoader, "execute", new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                LogUtils.startLog(TAG);
-                LogUtils.logString("TAG","查看Request数据");
-                //查看Request数据
-                Object thisObj = param.thisObject;
-                Class<?> thisClass = thisObj.getClass();
-                Field originalRequest = thisClass.getDeclaredField("originalRequest");
-                originalRequest.setAccessible(true);
-                okhttp3.Request req = (okhttp3.Request)originalRequest.get(thisObj);
-                String reqUrl = req.url().toString();
-                LogUtils.logString("TAG",reqUrl);
+    private void hookOkhttp(ClassLoader cl){
+                findAndHookMethod("okhttp3.RealCall", cl, "execute", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        LogUtils.startLog(TAG);
+                        LogUtils.logString(TAG,"hookOkhttp");
+                        LogUtils.logString(TAG,"查看Request数据");
+                        //查看Request数据
+                        Object thisObj = param.thisObject;
+                        Class<?> thisClass = thisObj.getClass();
+                        Field originalRequest = thisClass.getDeclaredField("originalRequest");
+                        originalRequest.setAccessible(true);
+                        okhttp3.Request req = (okhttp3.Request)originalRequest.get(thisObj);
+                        String reqUrl = req.url().toString();
+                        LogUtils.logString(TAG,reqUrl);
+                        CommonUtils.printStack(TAG);
+                        LogUtils.endLog(TAG);
+                    }
+
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        LogUtils.startLog(TAG);
+                        LogUtils.logString(TAG,"hookOkhttp");
+                        //查看Response数据
+                        LogUtils.logString(TAG,"查看Response数据");
+                        okhttp3.Response resp = (okhttp3.Response)param.getResult();
+                        byte[] data = resp.body().bytes();
+                        LogUtils.logString(TAG,"查看Response数据String");
+                        LogUtils.logBinString(TAG,data);
+                        LogUtils.logString(TAG,"查看Response数据HexString");
+                        LogUtils.logBinHexStr(TAG,data);
+                        //CommonUtils.printStack(TAG);
+                        LogUtils.startLog(TAG);
+                    }
+                });
 
             }
-
-
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                LogUtils.startLog(TAG);
-                //查看Response数据
-                LogUtils.logString("TAG","查看Response数据");
-                okhttp3.Response resp = (okhttp3.Response)param.getResult();
-                LogUtils.startLog(TAG);
-            }
-        });
-
-
-
-
-    }
 
     //Hook HttpClient库的HTTP发送、接收
-    public void hookHttpClient(XC_LoadPackage.LoadPackageParam lpparam) {
+    public void hookHttpClient(ClassLoader cl) {
 
         //execute为在抽象类AbstractHttpClient中的final函数，且该函数其他重载最终转调用这里的函数，所以直接hook这里
-        findAndHookMethod("org.apache.http.impl.client.AbstractHttpClient", lpparam.classLoader,
+        findAndHookMethod("org.apache.http.impl.client.AbstractHttpClient",cl,
                 "execute", HttpHost.class, HttpRequest.class, HttpContext.class, new XC_MethodHook() {
                     //查看Request数据
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         LogUtils.startLog(TAG);
+                        LogUtils.logString(TAG, "hookHttpClient");
                         //HttpHost host = (HttpHost) param.args[0];
                         HttpRequest request = (HttpRequest) param.args[1];
                         if (request instanceof HttpGet) {
@@ -524,9 +535,10 @@ public class HttpHook {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         //
+                        LogUtils.startLog(TAG);
+                        LogUtils.logString(TAG, "hookHttpClient");
                         HttpResponse resp = (HttpResponse) param.getResult();
                         if (resp != null && HTTP_RESPONSE) {
-                            mLog("Status Code", "" + resp.getStatusLine().getStatusCode());
                             LogUtils.logString(TAG, "HTTP_RESPONSE数据：");
                             Header[] headers = resp.getAllHeaders();
                             if (headers != null) {
@@ -546,7 +558,7 @@ public class HttpHook {
                                 LogUtils.logBinHexStr(TAG, data);
                             }
                         }
-                        super.afterHookedMethod(param);
+                        LogUtils.endLog(TAG);
                     }
                 });
     }

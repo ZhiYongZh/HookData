@@ -15,18 +15,18 @@ import reverse.com.hookdata.Utils.LogUtils;
 public class HookEncrypt  {
 
     private static  String TAG_doFinal = "HOOKDATA";
-    public static void startEncryptHook(XC_LoadPackage.LoadPackageParam lpparam) {
-        hookdoFinal001(lpparam);
-        hookdoFinal002(lpparam);
-        hookdoFinal003(lpparam);
-        hookdoFinal004(lpparam);
-        hookdoFinal005(lpparam);
-        hookdoFinal006(lpparam);
-        hookdoFinal007(lpparam);
+    public static void startEncryptHook(ClassLoader cl) {
+        hookdoFinal001(cl);
+        hookdoFinal002(cl);
+        hookdoFinal003(cl);
+        hookdoFinal004(cl);
+        hookdoFinal005(cl);
+        hookdoFinal006(cl);
+        hookdoFinal007(cl);
     }
 
     // byte[] doFinal()
-    private static void hookdoFinal001(XC_LoadPackage.LoadPackageParam lpparam){
+    private static void hookdoFinal001(ClassLoader cl){
         XposedHelpers.findAndHookMethod(Cipher.class, "doFinal", new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -46,7 +46,7 @@ public class HookEncrypt  {
     }
 
     //int doFinal(byte[] output, int outputOffset)
-    private static void hookdoFinal002(XC_LoadPackage.LoadPackageParam lpparam){
+    private static void hookdoFinal002(ClassLoader cl){
 
         XposedHelpers.findAndHookMethod(Cipher.class, "doFinal", byte[].class,int.class,new XC_MethodHook() {
             @Override
@@ -67,7 +67,7 @@ public class HookEncrypt  {
     }
 
     // byte[] doFinal(byte[] input)
-    private static void hookdoFinal003(XC_LoadPackage.LoadPackageParam lpparam){
+    private static void hookdoFinal003(ClassLoader cl){
 
         XposedHelpers.findAndHookMethod(Cipher.class, "doFinal", byte[].class,new XC_MethodHook() {
             @Override
@@ -96,7 +96,7 @@ public class HookEncrypt  {
     }
 
     //byte[] doFinal(byte[] input, int inputOffset, int inputLen)
-    private static void hookdoFinal004(XC_LoadPackage.LoadPackageParam lpparam){
+    private static void hookdoFinal004(ClassLoader cl){
 
         XposedHelpers.findAndHookMethod(Cipher.class, "doFinal", byte[].class,int.class,int.class,new XC_MethodHook() {
             @Override
@@ -126,7 +126,7 @@ public class HookEncrypt  {
     }
 
     //int doFinal(byte[] input, int inputOffset, int inputLen,byte[] output)
-    private static void hookdoFinal005(XC_LoadPackage.LoadPackageParam lpparam){
+    private static void hookdoFinal005(ClassLoader cl){
 
         XposedHelpers.findAndHookMethod(Cipher.class, "doFinal", byte[].class,int.class,int.class,byte[].class,new XC_MethodHook() {
             @Override
@@ -155,7 +155,7 @@ public class HookEncrypt  {
     }
 
     //doFinal(byte[] input, int inputOffset, int inputLen,byte[] output, int outputOffset)
-    private static void hookdoFinal006(XC_LoadPackage.LoadPackageParam lpparam){
+    private static void hookdoFinal006(ClassLoader cl){
         XposedHelpers.findAndHookMethod(Cipher.class, "doFinal", byte[].class,int.class,int.class,byte[].class,int.class,new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -183,7 +183,7 @@ public class HookEncrypt  {
     }
 
     // doFinal(ByteBuffer input, ByteBuffer output)
-    private static void hookdoFinal007(XC_LoadPackage.LoadPackageParam lpparam){
+    private static void hookdoFinal007(ClassLoader cl){
         XposedHelpers.findAndHookMethod(Cipher.class, "doFinal", ByteBuffer.class,ByteBuffer.class,new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {

@@ -1,9 +1,15 @@
 package reverse.com.hookdata.Main;
 
+import android.app.Application;
+import android.content.Context;
+
 import de.robv.android.xposed.IXposedHookLoadPackage;
+import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import reverse.com.hookdata.HookEncrypt.HookEncrypt;
 import reverse.com.hookdata.HookStream.HttpHook;
+
+import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 
 /**
  * Created by ZhouZhiYong on 2018/12/11.
@@ -19,13 +25,19 @@ public class IncomeHook implements IXposedHookLoadPackage {
             System.out.println("******No Package hook******");
             return;
         }
+        findAndHookMethod(Application.class, "attach", Context.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                final ClassLoader cl = ((Context)param.args[0]).getClassLoader();
 
-        //hook数据流处理相关函数
-        httpHook.startStreamHook(lpparam);
+                //hook数据流处理相关函数
+                httpHook.startStreamHook(cl);
 
-        //hook加密相关函数
-        HookEncrypt.startEncryptHook(lpparam);
+                //hook加密相关函数
+                HookEncrypt.startEncryptHook(cl);
 
+            }
+        });
 
 
 
