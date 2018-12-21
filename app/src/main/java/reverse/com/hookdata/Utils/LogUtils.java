@@ -6,7 +6,7 @@ import android.util.Log;
  * Created by ZhouZhiYong on 2018/12/11.
  */
 public class LogUtils {
-
+    private static  String TAG_doFinal = "HOOKDATA";
     //打印字符串日志
     public static void logString(String TAG,String content){
         Log.d(TAG,content);

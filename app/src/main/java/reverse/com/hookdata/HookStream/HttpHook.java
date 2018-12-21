@@ -101,8 +101,12 @@ public class HttpHook {
             //hook HttpClient接口
             hookHttpClient(cl);
 
-            //hook volley库 okhttp3
+            //hook okhttp3
             hookOkhttp(cl);
+
+
+            //hook volley
+            hookVolley(cl);
 
             //上述是从整个报文发送接收处查找，下面对每个HEADER或者参数进行定位，以便解析每个字段含义的处理地方
 
@@ -399,7 +403,7 @@ public class HttpHook {
                         LogUtils.logString(TAG,"查看Request数据");
                         //查看Request数据
                         Object thisObj = param.thisObject;
-                        Class<?> thisClass = thisObj.getClass();
+                        Class thisClass = thisObj.getClass();
                         Field originalRequest = thisClass.getDeclaredField("originalRequest");
                         originalRequest.setAccessible(true);
                         okhttp3.Request req = (okhttp3.Request)originalRequest.get(thisObj);
@@ -423,11 +427,17 @@ public class HttpHook {
                         LogUtils.logString(TAG,"查看Response数据HexString");
                         LogUtils.logBinHexStr(TAG,data);
                         //CommonUtils.printStack(TAG);
-                        LogUtils.startLog(TAG);
+                        LogUtils.endLog(TAG);
                     }
                 });
 
             }
+
+
+    //hook volley库
+    public void hookVolley(ClassLoader cl) {
+
+    }
 
     //Hook HttpClient库的HTTP发送、接收
     public void hookHttpClient(ClassLoader cl) {
